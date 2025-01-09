@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique //email will be unique
+  first_name String
+  last_name  String? //Here ? means nullable
+  address    String?
+  phone      String?
+  password   String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now())
+  owner      Product[] @relation("owner") //one-many with Product
+  buyer      Product[] @relation("buyer") //one-many with Product
+  rental     Rentals[] @relation("renter") //one-many with Rentals
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  title       String
+  categories  String[]
+  description String?
+  price       Float
+  rent_price  Float?
+  rent_period String?
+  views       Int?      @default(1)
+  status      String?   @default("available")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  owner       User      @relation("owner", fields: [owner_id], references: [id]) //belongs to owner
+  owner_id    Int
+  buyer       User?     @relation("buyer", fields: [buyer_id], references: [id]) //belongs to buyer
+  buyer_id    Int?
+  rental      Rentals[] @relation("rental") //one-many with Rentals
+}
+
+model Rentals {
+  id         Int     @id @default(autoincrement())
+  rent_from  String
+  rent_to    String
+  product    Product @relation("rental", fields: [product_id], references: [id]) //belongs to product
+  product_id Int
+  renter     User    @relation("renter", fields: [renter_id], references: [id]) //belongs to user
+  renter_id  Int
+}
